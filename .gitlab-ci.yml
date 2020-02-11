@@ -1,0 +1,62 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+- build
+- test
+- integration
+- deploy
+
+variables:
+  IMAGE_TAG: docker.pkg.github.com/the-maux/tipboard/tipboard:latest-gitlab
+
+build_img:
+  stage: build
+  script:
+    - docker build -t cryptoIA:untested .
+    -
+unit_test:
+  stage: test
+  script:
+    - echo '' >> requirements.txt && echo 'coverage' >> requirements.txt
+    - pip install --user -r requirements.txt && echo 'Env configured [x]'
+    - /root/.local/bin/coverage run --source='.' manage.py test
+    - /root/.local/bin/coverage report
+
+quality_check:
+  stage: test
+  script:
+    - python -m pip install flake8
+    - python -c 'from Quality_check import quality_check; quality_check()'
+
+integration_dev:
+  stage: integration
+  only: ['dev']
+  script:
+    - docker login -u themaux -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
+    - docker build -t docker.pkg.github.com/the-maux/tipboard/tipboard:latest .
+    - docker push docker.pkg.github.com/the-maux/tipboard/tipboard:latest
+
+integration_master:
+  stage: integration
+  only: ['master']
+  script:
+    - docker login -u themaux -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
+    - docker build -t docker.pkg.github.com/the-maux/tipboard/tipboard:1.6.0 .
+    - docker push docker.pkg.github.com/the-maux/tipboard/tipboard:1.6.0
+
+deploy_preprod:
+  stage: trigger_deploy
+  only: ['dev']
+  variables:
+    WEB_HOOK: curl -X POST -F token=${TOKEN_WEBHOOK} -F ref=develop https://gitlab.com/api/v4/projects/16505003/trigger/pipeline
+
+deploy_prod:
+  stage: trigger_deploy
+  extends: .pipepline_trigger
+  only: ['master']
+  variables:
+    WEB_HOOK: curl -X POST -F token=${TOKEN_WEBHOOK} -F ref=master https://gitlab.com/api/v4/projects/16505003/trigger/pipeline
+© 2020 GitHub, Inc.
