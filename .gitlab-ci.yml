@@ -9,14 +9,11 @@ stages:
 - integration
 - deploy
 
-variables:
-  IMAGE_TAG: docker.pkg.github.com/the-maux/tipboard/tipboard:latest-gitlab
-
 build_img:
   stage: build
   script:
     - docker build -t cryptoIA:untested .
-    -
+
 unit_test:
   stage: test
   script:
@@ -35,28 +32,26 @@ integration_dev:
   stage: integration
   only: ['dev']
   script:
-    - docker login -u themaux -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
-    - docker build -t docker.pkg.github.com/the-maux/tipboard/tipboard:latest .
-    - docker push docker.pkg.github.com/the-maux/tipboard/tipboard:latest
+    - docker login -u matthieuBouamama -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
+    - docker build -t docker.pkg.github.com/bouamamaMatthieu/cryptoIA/cryptoIA:latest .
+    - docker push docker.pkg.github.com/bouamamaMatthieu/cryptoIA/cryptoIA:latest
 
 integration_master:
   stage: integration
   only: ['master']
   script:
-    - docker login -u themaux -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
-    - docker build -t docker.pkg.github.com/the-maux/tipboard/tipboard:1.6.0 .
-    - docker push docker.pkg.github.com/the-maux/tipboard/tipboard:1.6.0
+    - docker login -u matthieuBouamama -p ${CI_GITHUB_PACKAGE} docker.pkg.github.com
+    - docker build -t docker.pkg.github.com/bouamamaMatthieu/cryptoIA/cryptoIA:1.6.0 .
+    - docker push docker.pkg.github.com/bouamamaMatthieu/cryptoIA/cryptoIA:1.6.0
 
 deploy_preprod:
-  stage: trigger_deploy
+  stage: deploy
   only: ['dev']
-  variables:
-    WEB_HOOK: curl -X POST -F token=${TOKEN_WEBHOOK} -F ref=develop https://gitlab.com/api/v4/projects/16505003/trigger/pipeline
+  script:
+    - echo test
 
 deploy_prod:
-  stage: trigger_deploy
-  extends: .pipepline_trigger
+  stage: deploy
   only: ['master']
-  variables:
-    WEB_HOOK: curl -X POST -F token=${TOKEN_WEBHOOK} -F ref=master https://gitlab.com/api/v4/projects/16505003/trigger/pipeline
-© 2020 GitHub, Inc.
+  script:
+    - echo test

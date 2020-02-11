@@ -1,8 +1,4 @@
-adbutils==0.7.1
 APScheduler==3.6.3
-datadispatch==1.0.0
 Django==3.0.2
-django-bootstrap4==1.1.1
-packaging==20.0
 requests==2.22.0
-urllib3==1.25.8
+channels==2.4.0
